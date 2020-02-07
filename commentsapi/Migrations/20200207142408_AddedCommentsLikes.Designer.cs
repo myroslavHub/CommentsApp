@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using commentsapi.Models;
 
 namespace commentsapi.Migrations
 {
     [DbContext(typeof(CommentsContext))]
-    partial class CommentsContextModelSnapshot : ModelSnapshot
+    [Migration("20200207142408_AddedCommentsLikes")]
+    partial class AddedCommentsLikes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

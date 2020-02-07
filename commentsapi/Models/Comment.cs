@@ -10,6 +10,7 @@ namespace commentsapi.Models
             Comments = new List<Comment>();
         }
         public int Id { get; set; }
+        public int Likes { get; set; }
         public string Text { get; set; }
         public string Author { get; set; }
 
