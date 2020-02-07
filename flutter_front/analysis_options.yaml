@@ -1,0 +1,10 @@
+include: package:lint/analysis_options.yaml
+
+linter:
+  rules:
+    prefer_relative_imports: true
+
+analyzer:
+  errors:
+    prefer_relative_imports: error
+    prefer_const_constructors_in_immutables: false

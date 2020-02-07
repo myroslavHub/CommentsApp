@@ -31,8 +31,8 @@ namespace commentsapi.Controllers
             // }
             // IIncludableQueryable<Topic, ICollection<Comment>> rr;
 
-
             return await _context.Topics.Include(t => t.Comments).ToListAsync();
+
             //return await _context.Topics.ToListAsync();
         }
 
