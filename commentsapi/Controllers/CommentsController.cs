@@ -119,7 +119,7 @@ namespace commentsapi.Controllers
             return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
         }
 
-        [HttpPost("{Id}")]
+        [HttpPost("Id")]
         public async Task<ActionResult<Comment>> PostComment(int id, Comment comment)
         {
             var t = await _context.Comments.FindAsync(id);
