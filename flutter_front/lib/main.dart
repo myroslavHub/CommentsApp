@@ -8,11 +8,20 @@ import 'widgets/user_page.dart';
 void main() {
   BlocSupervisor.delegate = SimpleBlocDelegate();
 
-  runApp(MyApp());
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider<UserBloc>(
+        create: (BuildContext context) => UserBloc(),
+      ),
+      BlocProvider<TopicBloc>(
+        create: (BuildContext context) => TopicBloc(),
+      ),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,11 +29,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BlocProvider(
-        create: (context) => UserBloc(),
-        child: UserPage(),
-      ),
+      home: UserPage(),
+      // home: BlocProvider(
+      //   create: (context) => UserBloc(),
+      //   child: UserPage(),
+      // ),
     );
   }
-
 }

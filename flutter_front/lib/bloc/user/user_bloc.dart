@@ -1,48 +1,32 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../models/user.dart';
+import '../../repo/user_repository.dart';
 import 'user_event.dart';
 import 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
+  final _repo = UserRepository();
+
   @override
   UserState get initialState => UserUninitialized();
 
   @override
   Stream<UserState> mapEventToState(UserEvent event) async* {
-    if (event is LoadSavedUser) {
-      try {
-        yield UserLoading();
-        SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      if (event is LoadSavedUser) {
+          yield UserLoading();
+          final user = await _repo.loadUser();
+          yield (user != null) ? UserLoaded(user) : UserLoadFailed();
 
-        String name = prefs.getString('username');
-        if (name != null) {
-          yield UserLoaded(User(name));
-        } else {
-          yield UserLoadFailed();
-        }
-      } catch (_) {
+      } else if (event is SaveUser) {
+          yield UserLoading();
+          yield UserLoaded(await _repo.saveUser(event.user));
+
+      } else {
         yield UserLoadFailed();
       }
-    }else
-    if (event is SaveUser) {
-      try {
-        yield UserLoading();
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        
-        prefs.setString('username', event.user.name);
-
-        yield UserLoaded(event.user);
-
-      } catch (_) {
-        yield UserLoadFailed();
-      }
-    }
-    else{
+    } catch (_) {
       yield UserLoadFailed();
     }
-
   }
 }

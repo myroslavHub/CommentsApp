@@ -29,9 +29,10 @@ namespace commentsapi
         {
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
                     {
-                        builder.AllowAnyOrigin()
+                        builder
                             .AllowAnyMethod()
-                            .AllowAnyHeader();
+                            .AllowAnyHeader()
+                            .SetIsOriginAllowed((host) => true);;
                     }));
             services.AddDbContext<CommentsContext>();
             services.AddControllers();
@@ -62,7 +63,7 @@ namespace commentsapi
             //     app.UseOpenApi();
             // app.UseSwaggerUi3();
 
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
 
 

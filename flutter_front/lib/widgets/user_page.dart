@@ -23,9 +23,9 @@ class UserPage extends StatelessWidget {
             if (state is UserLoading) {
               return const Center(
                 child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: CircularProgressIndicator()),
+                    width: 200,
+                    height: 200,
+                    child: CircularProgressIndicator()),
               );
             }
             if (state is UserLoaded) {
@@ -45,7 +45,8 @@ class UserPage extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 8),
                         child: Text(
                           'Го спілкуватись!',
                           style: Theme.of(context).textTheme.display1,
@@ -54,13 +55,17 @@ class UserPage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: MaterialButton(
-                          color: Colors.blue[200],
+                          color: Colors.blue[300],
                           padding: const EdgeInsets.all(8.0),
-                          onPressed: () {
+                          onPressed: () async {
+                            // print('гоу');
+                            // await someMethod();
+                            // print('гоу енд');
                             Navigator.of(context).push(MaterialPageRoute(builder: (context) => TopicsPage()));
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 20),
                             child: const Text('Гоу!'),
                           ),
                         ),
@@ -88,7 +93,8 @@ class UserPage extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 8),
                         child: Text(
                           "введи своє ім'я",
                           style: Theme.of(context).textTheme.display1,
