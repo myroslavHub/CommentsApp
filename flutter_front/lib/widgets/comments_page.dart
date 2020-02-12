@@ -15,85 +15,75 @@ class CommentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topicBloc = context.bloc<TopicBloc>();
+
     final commentsBloc = context.bloc<CommentBloc>();
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Header(),
-          Expanded(
-            child: BlocBuilder<CommentBloc, CommentState>(
-              builder: (BuildContext context, CommentState state) {
-                if (state is CommentsUninitialized) {
-                  commentsBloc.add(FetchComments(topic.id));
-                  return const Text('Loading...');
-                }
-                if (state is CommentsLoading) {
-                  return const Center(
-                    child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: CircularProgressIndicator()),
-                  );
-                }
-                if (state is CommentsLoadFailed) {
-                  return const FailMessage();
-                }
+    return WillPopScope(
+      onWillPop: () async {
+        topicBloc.add(UninitializeTopic());
+        return true;
+      },
+          child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            Header(),
+            Expanded(
+              child: BlocBuilder<CommentBloc, CommentState>(
+                builder: (BuildContext context, CommentState state) {
+                  if (state is CommentsUninitialized) {
+                    commentsBloc.add(FetchComments(topic.id));
+                    return const Text('Loading...');
+                  }
+                  if (state is CommentsLoading) {
+                    return const Center(
+                      child: SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (state is CommentsLoadFailed) {
+                    return const FailMessage();
+                  }
 
-                if (state is CommentsLoaded) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 15,
-                    ),
-                    child: SingleChildScrollView(
-                      child: BlocBuilder<UserBloc, UserState>(
-                        builder: (BuildContext context, UserState userState) {
-                          final user = (userState as UserLoaded).user;
-                          var comments = List<Widget>();
-                          comments.add(getCommentHeaderWidget(
-                              context, commentsBloc, user));
-                          // comments.add(Row(
-                          //   mainAxisAlignment: MainAxisAlignment.end,
-                          //   children: <Widget>[
-                          //     MaterialButton(
-                          //       onPressed: () {
-                          //         _addTopicCommentDialog(context,
-                          //             (userState as UserLoaded).user, commentsBloc);
-                          //       },
-                          //       child: Text(
-                          //         'Добавити коментар',
-                          //         style: Theme.of(context)
-                          //             .textTheme
-                          //             .subtitle
-                          //             .copyWith(color: Colors.blue),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ));
-
-                          for (var com in state.comments) {
-                            comments.addAll(
-                                getComment(context, commentsBloc, com, user));
-                          }
-
-                          return Column(
-                            children: comments,
-                          );
-                        },
+                  if (state is CommentsLoaded) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 15,
                       ),
-                    ),
-                  );
-                }
+                      child: SingleChildScrollView(
+                        child: BlocBuilder<UserBloc, UserState>(
+                          builder: (BuildContext context, UserState userState) {
+                            final user = (userState as UserLoaded).user;
+                            var comments = <Widget>[];
+                            comments.add(getCommentHeaderWidget(
+                                context, commentsBloc, user));
+                                
+                            for (var com in state.comments) {
+                              comments.addAll(
+                                  getComment(context, commentsBloc, com, user));
+                            }
 
-                return const FailMessage();
-              },
+                            return Column(
+                              children: comments,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  }
+
+                  return const FailMessage();
+                },
+              ),
             ),
-          ),
-          Container(
-            color: Colors.yellow[50],
-          ),
-        ],
-      ),
+            Container(
+              color: Colors.yellow[50],
+            ),
+          ],
+        ),
+      ), 
     );
   }
 

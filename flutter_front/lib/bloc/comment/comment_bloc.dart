@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../models/comment.dart';
 
 import '../../repo/comments_repository.dart';
 
@@ -15,9 +16,8 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
     try {
       if (event is FetchComments) {
         yield CommentsLoading();
-        print('before getComments');
         yield await getComments(topicId: event.topicId);
-        print('after getComments');
+
       } else if (event is DeleteCommentEvent) {
         yield await deleteComment(event);
 
@@ -33,36 +33,55 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
         final result = await _repo.createCommentForTopic(
             event.parentTopicId, event.text, event.author);
 
-        if (result != 5) {
+        if (result == null) {
           yield CommentsLoadFailed();
+        } else {
+          yield await getComments();
         }
-        yield await getComments();
 
       } else if (event is LikeCommentEvent) {
         final res = await _repo.likeComment(event.id);
-        if (res != 5) {
-          yield CommentsLoadFailed();
-        }
-        yield await getComments();
+        yield await insertModifiedComment(event.id, res);
 
       } else if (event is DislikeCommentEvent) {
         final res = await _repo.dislikeComment(event.id);
-        if (res != 5) {
-          yield CommentsLoadFailed();
-        }
-        yield await getComments();
-        
+        yield await insertModifiedComment(event.id, res);
+
       } else if (event is UpdateCommentEvent) {
         final res = await _repo.updateComment(event.id, event.text);
-        if (res != 5) {
-          yield CommentsLoadFailed();
-        }
-        yield await getComments();
+        yield await insertModifiedComment(event.id, res);
+
       } else {
         yield CommentsLoadFailed();
       }
     } catch (_) {
       yield CommentsLoadFailed();
+    }
+  }
+
+  Future<CommentState> insertModifiedComment(int id, Comment res) async {
+    if (state is CommentsLoaded) {
+      final st = state as CommentsLoaded;
+      _insertComment(id, st.comments, res);
+      return CommentsLoaded(
+          topicId: st.topicId,
+          comments: st.comments,
+          dirtySwitch: !st.dirtySwitch);
+    } else {
+      return getComments();
+    }
+  }
+
+  void _insertComment(int id, List<Comment> comments, Comment newComment) {
+    for (int i = 0; i < comments.length; i++) {
+      if (comments[i].id == newComment.id) {
+        comments[i] =
+            newComment.copyWithComments(newComments: comments[i].comments);
+        return;
+      }
+      if (comments[i].comments != null) {
+        _insertComment(id, comments[i].comments, newComment);
+      }
     }
   }
 
@@ -75,13 +94,13 @@ class CommentBloc extends Bloc<CommentEvent, CommentState> {
   }
 
   Future<CommentState> getComments({int topicId}) async {
-    if (topicId != null ||  state is CommentsLoaded){
-      print('before _repo.getComments');
-      final data = await _repo.getComments(topicId ?? (state as CommentsLoaded).topicId);
-      print('after _repo.getComments');
+    if (topicId != null || state is CommentsLoaded) {
+      final data =
+          await _repo.getComments(topicId ?? (state as CommentsLoaded).topicId);
       return (data != null)
           ? CommentsLoaded(
-              topicId: topicId ?? (state as CommentsLoaded).topicId, comments: data)
+              topicId: topicId ?? (state as CommentsLoaded).topicId,
+              comments: data)
           : CommentsLoadFailed();
     }
     return CommentsLoadFailed();

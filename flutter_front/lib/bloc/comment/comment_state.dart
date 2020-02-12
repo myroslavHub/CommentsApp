@@ -14,11 +14,12 @@ class CommentsLoading extends CommentState {}
 class CommentsLoaded extends CommentState {
   final int topicId;
   final List<Comment> comments;
+  final bool dirtySwitch;
 
-  CommentsLoaded({this.topicId, this.comments});
+  CommentsLoaded({this.topicId, this.comments, this.dirtySwitch = false});
 
   @override
-  List<Object> get props => [topicId, comments];
+  List<Object> get props => [topicId, comments, dirtySwitch];
 }
 
 class CommentsLoadFailed extends CommentState { }

@@ -18,6 +18,18 @@ class Comment extends Equatable {
     this.comments,
   });
 
+
+  Comment copyWithComments({List<Comment>  newComments}){
+    return Comment(
+      id: id,
+      likes: likes,
+      author: author,
+      text: text,
+      date: date,
+      comments: newComments,
+    );
+  }
+
   @override
   List<Object> get props => [
         id,

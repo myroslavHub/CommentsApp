@@ -5,6 +5,8 @@ abstract class TopicEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class UninitializeTopic extends TopicEvent {}
+
 class FetchTopics extends TopicEvent {}
 
 class DeleteTopicEvent extends TopicEvent {

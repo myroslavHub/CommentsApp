@@ -1,15 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-import 'comment.dart';
-
 class Topic extends Equatable {
   final int id;
   final String author;
   final String name;
   final String description;
   final DateTime date;
-
-  final List<Comment> comments;
+  final int commentsCount;
 
   Topic({
     this.id,
@@ -17,7 +14,7 @@ class Topic extends Equatable {
     this.name,
     this.description,
     this.date,
-    this.comments,
+    this.commentsCount,
   });
 
   @override
@@ -27,7 +24,7 @@ class Topic extends Equatable {
         name,
         description,
         date,
-        comments,
+        commentsCount,
       ];
 
   static Topic fromJson(Map<String, dynamic> json) {
@@ -37,16 +34,10 @@ class Topic extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String,
       date: DateTime.parse(json['date'] as String),
-      comments: getComments(json['comments'] as List),
+      commentsCount: json['commentsCount'] as int,
     );
-  }
-  static List<Comment> getComments(Iterable json){
-    if (json != null) {
-      return json.map<Comment>((c) => Comment.fromJson(c as Map<String, dynamic>)).toList();
-		}
-    return [];
   }
 
     @override
-  String toString() => 'id: $id author: $author name: $name descrription: $description date: $date comments:${comments.map((cc)=>cc.toString()).join(",")}';
+  String toString() => 'id: $id author: $author name: $name descrription: $description date: $date commentsCount:$commentsCount';
 }

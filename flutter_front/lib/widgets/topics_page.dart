@@ -183,12 +183,7 @@ class TopicsPage extends StatelessWidget {
           children: <Widget>[
             InkWell(
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (BuildContext context) => CommentBloc(),
-                    child: CommentPage(topic: topic),
-                  ),
-                ));
+                navigateToCommentsPage(context, topic, topicBloc);
               },
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -251,18 +246,13 @@ class TopicsPage extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => BlocProvider(
-                        create: (BuildContext context) => CommentBloc(),
-                        child: CommentPage(topic: topic),
-                      ),
-                    ));
+                    navigateToCommentsPage(context, topic, topicBloc);
                   },
                   child: Padding(
                     padding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                     child: Text(
-                      '${topic.comments.length} КОМЕНТАРІВ',
+                      '${topic.commentsCount} КОМЕНТАРІВ',
                       style: Theme.of(context)
                           .textTheme
                           .subtitle
@@ -277,5 +267,14 @@ class TopicsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void navigateToCommentsPage(BuildContext context, Topic topic, TopicBloc topicBloc) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => BlocProvider(
+        create: (BuildContext context) => CommentBloc(),
+        child: CommentPage(topic: topic),
+      ),
+    ));
   }
 }

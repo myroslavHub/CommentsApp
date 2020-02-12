@@ -35,7 +35,10 @@ class TopicBloc extends Bloc<TopicEvent, TopicState> {
         }
         final topics = await _repo.getTopics();
         yield (topics != null) ? TopicsLoaded(topics) : TopicLoadFailed();
-      }else{
+      }else if (event is UninitializeTopic){
+        yield TopicsUninitialized();
+      }
+      else{
         yield TopicLoadFailed();
       }
     } catch (_) {

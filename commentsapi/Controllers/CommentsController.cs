@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using commentsapi.Models;
@@ -18,47 +17,6 @@ namespace commentsapi.Controllers
         public CommentsController(CommentsContext context)
         {
             _context = context;
-        }
-
-        // GET: api/Comments
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
-        {
-            var comments = await _context.Comments.ToListAsync();
-            var indexes = RemoveIds(comments);
-            comments.RemoveAll(c=>indexes.Contains(c.Id));
-            // foreach (var index in )
-            // {
-            //     if (comments.Any(c=>c.Id == index)){
-            //         comments.re
-            //     }
-            // }
-            return comments;
-            return await _context.Comments.ToListAsync();
-        }
-        private IEnumerable<int> RemoveIds(List<Comment> comment)
-        {
-            var lst = new List<int>();
-
-            foreach (var c in comment)
-            {
-                lst.AddRange(RemoveIds(c));
-            }
-            return lst;
-        }
-        private IEnumerable<int> RemoveIds(Comment comment, int deep = 0)
-        {
-            if (deep > 0)
-            {
-                yield return comment.Id;
-            }
-
-            for (int i = 0; i < comment.Comments.Count; i++){
-                foreach (var item in RemoveIds(comment.Comments.ElementAt(i), deep + 1))
-                {
-                    yield return item;
-                }
-            }
         }
 
         // GET: api/Comments/5
@@ -103,41 +61,123 @@ namespace commentsapi.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Comments
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost()]
-        public async Task<ActionResult<Comment>> PostComment(Comment comment)
-        {
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
         }
 
-        [HttpPost("Id")]
-        public async Task<ActionResult<Comment>> PostComment(int id, Comment comment)
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateComment(int id, Comment commentToUpdate)
         {
-            var t = await _context.Comments.FindAsync(id);
+            var comment = await _context.Comments.FindAsync(id);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            comment.Text = commentToUpdate.Text;
+
+            _context.Entry(comment).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CommentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+        }
+
+        [HttpPut("like/{id}")]
+        public async Task<IActionResult> LikeComment(int id)
+        {
+            var comment = await _context.Comments.FindAsync(id);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            comment.Likes++;
+
+            _context.Entry(comment).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CommentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+        }
+
+        [HttpPut("dislike/{id}")]
+        public async Task<IActionResult> DislikeComment(int id)
+        {
+            var comment = await _context.Comments.FindAsync(id);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            comment.Likes--;
+
+            _context.Entry(comment).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CommentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+        }
+
+        [HttpPost("{parentCommentId}")]
+        public async Task<ActionResult<Comment>> PostComment(int parentCommentId, Comment comment)
+        {
+            var t = await _context.Comments.FindAsync(parentCommentId);
             t.Comments.Add(comment);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
         }
 
-        // [HttpPut("add/{id}")]
-        // public async Task<IActionResult> AddComment(int id, Comment comment)
-        // {
-        //     var t = await _context.Comments.FindAsync(id);
-        //     t.Comments.Add(comment);
-        //     await _context.SaveChangesAsync();
 
-        //     return NoContent();
-        // }
+        [HttpPost("addfortopic/{topicId}")]
+        public async Task<ActionResult<Comment>> PostCommentForTopic(int topicId, Comment comment)
+        {
+            var t = await _context.Topics.Include(t=>t.Comments).FirstAsync(t=>t.Id == topicId);
+            t.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+        }
 
         // DELETE: api/Comments/5
         [HttpDelete("{id}")]

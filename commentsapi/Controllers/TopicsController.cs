@@ -1,12 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using commentsapi.Models;
-using Microsoft.EntityFrameworkCore.Query;
+using commentsapi.Dto;
 
 namespace commentsapi.Controllers
 {
@@ -21,27 +19,39 @@ namespace commentsapi.Controllers
             _context = context;
         }
 
-        // GET: api/Topics
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Topic>>> GetTopics()
+        public async Task<ActionResult<IEnumerable<TopicDto>>> GetTopics()
         {
-            //return await DiveIn(_context.Topics.Include(t => t.Comments), 0).ToListAsync();
-            // for (int i = 0; i<100; i++){
-            //     t = t.ThenInclude(t=>t.Comments);
-            // }
-            // IIncludableQueryable<Topic, ICollection<Comment>> rr;
+            var topics = await _context.Topics.Include(t => t.Comments).ToListAsync();
+            var comments = await _context.Comments.ToListAsync();
 
-            return await _context.Topics.Include(t => t.Comments).ToListAsync();
-
-            //return await _context.Topics.ToListAsync();
+            return topics.Select(topic=>new TopicDto(){
+                Id = topic.Id,
+                Author = topic.Author,
+                Name = topic.Name,
+                Description = topic.Description,
+                Date = topic.Date,
+                CommentsCount = comments.Where(com => topic.Comments.Any(c => c.Id == com.Id)).ToList().Select(GetCommentsCount).Sum()
+            }).ToList();
         }
 
-        private IIncludableQueryable<Topic, ICollection<Comment>> DiveIn(IIncludableQueryable<Topic, ICollection<Comment>> topics, int number){
-            for (int i = 0; i < number; i++)
-            {
-                topics = topics.ThenInclude(t => t.Comments);
+        private int GetCommentsCount(Comment comment){
+            if (comment.Comments == null || comment.Comments.Count==0){
+                return 1;
             }
-            return topics;
+
+            return comment.Comments.Select(GetCommentsCount).Sum() + 1;
+        }
+
+
+        [HttpGet("{topicId}/comments")]
+        public async Task<ActionResult<IEnumerable<Comment>>> GetCommentsForTopic(int topicId)
+        {
+            var topic = await _context.Topics.Include(t => t.Comments).FirstAsync(t => t.Id == topicId);
+
+            var comments = await _context.Comments.ToListAsync();
+
+            return comments.Where(com => topic.Comments.Any(c => c.Id == com.Id)).ToList();
         }
 
         // GET: api/Topics/5
@@ -102,17 +112,6 @@ namespace commentsapi.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetTopic", new { id = topic.Id }, topic);
-        }
-
-        [HttpPost("addcomment/Id")]
-        public async Task<ActionResult<Comment>> PostComment(long id, Comment comment)
-        {
-            var t = await _context.Topics.Include(t=>t.Comments).FirstAsync(t=>t.Id == id);
-            //_context.Comments.Add(comment);
-            t.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetTopic", new { id = id }, t);
         }
 
         // DELETE: api/Topics/5
